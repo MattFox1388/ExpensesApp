@@ -1,0 +1,17 @@
+appId: BudgetMobileClient
+---
+- tapOn: "Select"
+- tapOn:
+    point: "18%,31%"
+- tapOn:
+    point: "62%,22%"
+- tapOn:
+    point: "76%,33%"
+- tapOn:
+    point: "50%,31%"
+- tapOn:
+    point: "12%,9%"
+- tapOn:
+    point: "50%,51%"
+- tapOn:
+    point: "12%,9%"

@@ -1,0 +1,12 @@
+appId: BudgetMobileClient
+---
+- tapOn: 
+    id: "modal-btn-0"
+- tapOn: 
+    id: "ignore-btn"
+- tapOn: "Submit"
+- tapOn:
+    id: "modal-btn-2"
+- tapOn: 
+    id: "need-btn"
+- tapOn: "Submit"

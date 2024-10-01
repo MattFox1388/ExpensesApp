@@ -1,0 +1,6 @@
+appId: org.wikipedia.wikipedia
+tags:
+  - ios
+  - passing
+---
+- launchApp

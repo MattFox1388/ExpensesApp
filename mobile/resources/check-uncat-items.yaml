@@ -1,0 +1,12 @@
+appId: BudgetMobileClient
+---
+- repeat:
+    while:
+      notVisible: "Uncategorized Items"
+    commands:
+      - tapOn: 
+            point: "12%,9%"
+- tapOn: "Uncategorized Items"
+- assertVisible: "Uncategorized Items"
+- assertVisible: "2024-09-04T00:00:00 To Share 00 900 󰧉  "
+- assertVisible: "2024-09-04T00:00:00 Deposit CASH APP* 1015 󰧉  "

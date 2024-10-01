@@ -1,0 +1,10 @@
+Transaction ID,Posting Date,Effective Date,Transaction Type,Amount,Check Number,Reference Number,Description,Transaction Category,Type,Balance,Memo,Extended Description
+f5899c1ed4b0c9184d90879e52d4bc52,9/4/2024,9/4/2024,Debit,-900,,825347106,To Share 00,Transfers,Home Banking,157.17,,To Share 00
+196e2c90f65065a3679da076de499ee2,9/4/2024,9/4/2024,Credit,1015,,825346812,Deposit CASH APP*,Deposits,Card,100,,Deposit Debit Card CASH APP*
+d414e535daf6d27ed8ec26daf7a363d6,9/4/2024,9/4/2024,Debit,-100,,825269199,Transfer to PayPal,Transfers,ACH,42.17,,PAYPAL TYPE: INST XFER ID
+394e605c89bf42329907e7354a17f074,9/2/2024,9/2/2024,Credit,100,,824789679,From Share 00,Transfers,Home Banking,142.17,,From Share 00
+4f98a8a1c36ba85fa272dbd8517c8672,8/30/2024,8/30/2024,Debit,-55.51,,823794402,Costco Gas Stations,Gasoline/Fuel,Card,42.17,, COSTCO GAS
+964c52460c004582e7162fbcaf83284c,8/30/2024,8/30/2024,Debit,-54.18,,823792813,Costco,Shopping,Card,97.68,,COSTCO WHSE
+5d058a8c6aa0d744b4b079a01d7c5431,8/26/2024,8/26/2024,Debit,-1800,,822081461,Transfer to Venmo,Transfers,ACH,151.86,,VENMO TYPE: PAYMENT ID:
+5987c58eacdec9bdc54caf1177b4ba59,8/25/2024,8/25/2024,Credit,800,,821811979,From Share 00,Transfers,Home Banking,1951.86,,From Share 00
+944bcda4a40e3752ac59cd18ea8d0d12,8/22/2024,8/22/2024,Debit,-795,,820747178,Transfer to PayPal,Transfers,ACH,1151.86,,PAYPAL TYPE: INST XFER ID: 

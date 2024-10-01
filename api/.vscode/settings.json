@@ -1,0 +1,11 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "C:\\Users\\aperr\\PycharmProjects\\budget_api.db",
+            "name": "budget_local"
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+appId: BudgetMobileClient
+---
+- repeat:
+    while:
+      notVisible: "Find Month"
+    commands:
+    - tapOn:
+        point: "12%,9%"
+- tapOn: "Find Month"
+- tapOn: "Select option"
+- assertVisible:
+    text: "8/2024"
+- tapOn: "8/2024"
+- "scroll"
+- assertVisible: "needs $55.51"
+

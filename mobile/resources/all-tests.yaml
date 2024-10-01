@@ -1,0 +1,7 @@
+appId: BudgetMobileClient
+---
+- runFlow: login-flow.yaml
+- runFlow: ingest-data.yaml
+- runFlow: check-uncat-items.yaml
+- runFlow: update-uncat-items.yaml
+- runFlow: check-month.yaml

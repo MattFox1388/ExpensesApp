@@ -1,0 +1,42 @@
+appId: BudgetMobileClient
+---
+- tapOn:
+    point: "62%,22%"
+- tapOn:
+    point: "94%,6%"
+- tapOn:
+    point: "93%,26%"
+- inputText: "kazou1388"
+- tapOn:
+    point: "93%,33%"
+- inputText: "g!antMint26"
+- tapOn: "Login"
+- tapOn:
+    point: "50%,68%"
+- tapOn: "Not Now"
+- tapOn: "Select"
+- tapOn:
+    point: "18%,31%"
+- tapOn:
+    point: "62%,22%"
+- tapOn:
+    point: "76%,33%"
+- tapOn:
+    point: "50%,31%"
+- tapOn:
+    point: "12%,9%"
+- tapOn:
+    point: "50%,51%"
+- tapOn:
+    point: "12%,9%"
+- repeat:
+    while:
+      notVisible: "Uncategorized Items"
+    commands:
+      - tapOn: 
+            point: "12%,9%"
+- tapOn: "Uncategorized Items"
+- assertVisible: "Uncategorized Items"
+- assertVisible: "2024-09-04T00:00:00 To Share 00 900 󰧉  "
+- assertVisible: "2024-09-04T00:00:00 Deposit CASH APP* 1015 󰧉  "
+
