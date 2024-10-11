@@ -7,6 +7,11 @@ class User(db.Model):
     username: str = db.Column(db.String(32), index=True)
     password_hash: str = db.Column(db.String(64))
 
+    def __init__(self, username, password):
+        self.username = username
+        self.hash_password(password)
+
+
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
 

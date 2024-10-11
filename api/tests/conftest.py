@@ -1,8 +1,10 @@
+from venv import create
+
 import pytest
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from app import app
+from app import create_app
 from models.category import Category
 from models.month import Month
 from models.monthRecord import MonthRecord
@@ -110,4 +112,5 @@ def mock_parse_disc_close_session(mocker):
 
 @pytest.fixture()
 def client():
-    return app.test_client()
+    test_client = create_app()
+    return test_client.test_client()

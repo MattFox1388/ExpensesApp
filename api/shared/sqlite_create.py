@@ -3,7 +3,7 @@ def initialize_db(conn):
     cursor = conn.cursor()
 
     cursor.execute('''
-        CREATE DATABASE budget;
+        CREATE DATABASE IF NOT EXISTS budget;
     ''')
 
     cursor.execute('''
@@ -11,24 +11,24 @@ def initialize_db(conn):
     ''')
 
     cursor.execute('''
-    DROP TABLE IF EXISTS `category`;
-    ''')
-
-    cursor.execute('''
-    DROP TABLE IF EXISTS `month_record`
-    ''')
-
-    cursor.execute('''
-    DROP TABLE IF EXISTS `month`
-    ''')
-
-    cursor.execute('''
-    DROP TABLE IF EXISTS `month_stat`
-    ''')
-
-    cursor.execute('''
     DROP TABLE IF EXISTS `uncategorized_item`
     ''')
+
+    cursor.execute('''
+        DROP TABLE IF EXISTS `month_record`
+        ''')
+
+    cursor.execute('''
+        DROP TABLE IF EXISTS `month_stat`
+        ''')
+
+    cursor.execute('''
+        DROP TABLE IF EXISTS `month`
+        ''')
+
+    cursor.execute('''
+        DROP TABLE IF EXISTS `category`;
+        ''')
 
     cursor.execute('''
     DROP TABLE IF EXISTS `user`
@@ -59,27 +59,6 @@ def initialize_db(conn):
   CHECK (`is_positive` IN (0, 1)),
   CONSTRAINT fk_category FOREIGN KEY (`cat_id`) REFERENCES `category` (`id`),
   CONSTRAINT fk_month FOREIGN KEY (`month_id`) REFERENCES `month` (`id`))
-    ''')
-
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS `month_stat` (
-  `id` INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  `month_id` INT NOT NULL,
-  `year_num` INT NOT NULL,
-  `date_val` TEXT NOT NULL,
-  `paycheck_planned` REAL NULL DEFAULT NULL,
-  `other_planned` REAL NULL DEFAULT NULL,
-  `expenses_planned` REAL NULL DEFAULT NULL,
-  `needs_planned` REAL NULL DEFAULT NULL,
-  `wants_planned` REAL NULL DEFAULT NULL,
-  `savings_planned` REAL NULL DEFAULT NULL,
-  `paycheck_actual` REAL NULL DEFAULT NULL,
-  `other_actual` REAL NULL DEFAULT NULL,
-  `expenses_actual` REAL NULL DEFAULT NULL,
-  `needs_actual` REAL NULL DEFAULT NULL,
-  `wants_actual` REAL NULL DEFAULT NULL,
-  `savings_actual` REAL NULL DEFAULT NULL,
-  CONSTRAINT fk_month_1 FOREIGN KEY (`month_id`) REFERENCES `month` (`id`))
     ''')
 
     cursor.execute('''
@@ -123,11 +102,11 @@ def initialize_db(conn):
 
     cursor.execute('''
     INSERT INTO `user` (username, password_hash)
-    VALUES ('kazou1388', '$6$rounds=656000$iP2TTnwvQA/b/yws$kHjRvEtq0pAwGSkajQAaSOLWRfBz3eh.m8oyw3WvS8RHEBiFNo7iWpaSzRISvYzukVx6zF3vMqo3JRFLapWag1')
+    VALUES ('kazou1388', '$6$rounds=656000$gGRjoZcVeBd9YpQi$rV6WQQfLXPOWPGNDAM7naLXDfdx7FU/kcxv3d39xhmyHtCYyc5U783iRZFTPASzzDFT9JFUABq/gRLHzdfs5l.')
     ''')
 
     cursor.execute('''
-    INSERT INTO `month`  (month_name)
+    INSERT INTO `month` (month_name)
 VALUES ('JAN'),
  ('FEB'),
  ('MAR'),
