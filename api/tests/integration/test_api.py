@@ -29,7 +29,7 @@ def test_login(test_client, login_payload):
 
 def test_create_user(test_client, create_user_input):
     response = test_client.put(
-        '/user', data=create_user_input
+        '/users', data=create_user_input
     )
 
     assert response.status_code == 200

@@ -8,7 +8,6 @@ import mysql.connector
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
-from typing import Tuple
 
 from alcem import db
 from models.category import Category
@@ -26,6 +25,8 @@ from services.uncategorized_items_services import UncategorizedItemsService
 from services.user_service import UserService
 from shared.delete_data_db import delete_data_db
 from shared.sqlite_create import initialize_db
+from shared.token import is_token_valid
+
 
 def create_app(app_config=None):
     load_dotenv()
@@ -89,21 +90,10 @@ def create_app(app_config=None):
         print('Wiped the database.')
 
 
-    def is_token_valid() -> Tuple[bool, object]:
-        token = request.args.get('token')
-        if not token:
-            return False, {'message': 'Missing token'}
-        try:
-            jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-        except:
-            return False, {'message': 'Invalid token'}
-        return True, {}
-
-
     def check_for_token(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            is_valid, error_obj = is_token_valid()
+            is_valid, error_obj = is_token_valid(app.config['SECRET_KEY'])
             if is_valid:
                 return func(*args, **kwargs)
             return jsonify(error_obj), 403
@@ -135,7 +125,7 @@ def create_app(app_config=None):
                 'message': 'Unable to verify credentials'
             }), 403
 
-    @app.route('/user', methods=['PUT'])
+    @app.route('/users', methods=['PUT'])
     def user():
         username = request.form['username']
         password = request.form['password']
@@ -149,7 +139,7 @@ def create_app(app_config=None):
             user_service.create_user(username, password)
             return "Success", 200
 
-    @app.route('/get_months', methods=['GET'])
+    @app.route('/months', methods=['GET'])
     @check_for_token
     def get_months():
         months = Month.query.all()
@@ -157,18 +147,17 @@ def create_app(app_config=None):
         return MonthDtoList(months=list(dtos)).json()
 
 
-    @app.route('/get_category_by_name', methods=['GET'])
-    def get_category_by_name():
-        cat_type = request.args.get("cat_type")
-        if cat_type is None:
-            return "No category parameter", 400
-        category = Category.query.filter_by(cat_type=cat_type.upper()).one_or_none()
+    @app.route('/categories/type/<type_name>', methods=['GET'])
+    def get_category_by_name(type_name):
+        if type_name is None:
+            return "No Category Parameter", 400
+        category = Category.query.filter_by(cat_type=type_name.upper()).one_or_none()
         if category is None:
             return "Category type not found", 400
         return json.dumps(category.id)
 
 
-    @app.route('/get_month_records', methods=['GET'])
+    @app.route('/month-records', methods=['GET'])
     @check_for_token
     def get_month_records():
         records = MonthRecord.query.all()
@@ -176,7 +165,7 @@ def create_app(app_config=None):
         return MonthRecordDtoList(month_records=list(dtos)).json()
 
 
-    @app.route('/get_month_stats', methods=['GET'])
+    @app.route('/month-stats', methods=['GET'])
     @check_for_token
     def get_month_stats():
         stats = MonthStat.query.all()
@@ -186,11 +175,10 @@ def create_app(app_config=None):
         return month_stats
 
 
-    @app.route('/get_month_stats_by_year', methods=['GET'])
+    @app.route('/month-stats/year/<year>', methods=['GET'])
     @check_for_token
-    def get_month_stats_by_year():
+    def get_month_stats_by_year(year):
         try:
-            year = request.args.get("year")
             year = valid_year(year)
             print('year: {}'.format(year))
         except ValueError:
@@ -203,14 +191,12 @@ def create_app(app_config=None):
         return json
 
 
-    @app.route('/get_month_record_by_year_and_month', methods=['GET'])
+    @app.route('/month-records/year/<year_num>/month/<month_val>', methods=['GET'])
     @check_for_token
-    def get_month_records_by_year_and_month():
+    def get_month_records_by_year_and_month(year_num, month_val):
         try:
-            year = request.args.get("year")
-            year = valid_year(year)
-            month = request.args.get('month')
-            month = valid_month(month)
+            year = valid_year(year_num)
+            month = valid_month(month_val)
         except ValueError:
             return "Invalid year or month parameter", 400
 
@@ -220,20 +206,18 @@ def create_app(app_config=None):
         return MonthRecordDtoList(month_records=list(dtos)).json()
 
 
-    @app.route('/get_month_record_by_id', methods=['GET'])
+    @app.route('/month-records/id/<param_id>', methods=['GET'])
     @check_for_token
-    def get_month_record_by_id():
-        id = request.args.get('id')
-        month_record = MonthRecord.query.filter_by(id=id).one_or_none()
+    def get_month_record_by_id(param_id):
+        month_record = MonthRecord.query.filter_by(id=param_id).one_or_none()
         dto = MonthRecordDto.from_orm(month_record)
         return dto.json()
 
 
-    @app.route('/get_month_id_by_name', methods=['GET'])
+    @app.route('/months/name/<param_name>', methods=['GET'])
     @check_for_token
-    def get_month_id_by_name():
-        name = request.args.get('name')
-        month = Month.query.filter_by(month_name=name).one_or_none()
+    def get_month_id_by_name(param_name):
+        month = Month.query.filter_by(month_name=param_name).one_or_none()
         if month is None:
             return "Month was not found with name provided", 400
         return json.dumps(month.id)
@@ -267,7 +251,7 @@ def create_app(app_config=None):
         return jsonify({'amount_processed': amount_processed})
 
 
-    @app.route('/get_month_records_uncat', methods=['GET'])
+    @app.route('/month-records-uncategorized', methods=['GET'])
     @check_for_token
     def get_month_records_uncategorized():
         month_records_uncat = MonthRecord.query.filter_by(cat_id=None)
@@ -275,14 +259,14 @@ def create_app(app_config=None):
         return MonthRecordDtoList(month_records=list(dtos)).json()
 
 
-    @app.route('/set_record_categories', methods=['POST'])
+    @app.route('/month-records-uncategorized', methods=['POST'])
     @check_for_token
     def set_record_categories():
         uncategorized_items = request.json
         return uncategorized_service.set_multiple_record_categories(uncategorized_items)
 
 
-    @app.route('/ignore_uncategorized_items', methods=['POST'])
+    @app.route('/ignore-uncategorized-items', methods=['POST'])
     @check_for_token
     def ignore_uncategorized_items():
         month_record_ids = request.json

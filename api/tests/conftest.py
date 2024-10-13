@@ -1,3 +1,4 @@
+import datetime
 from venv import create
 
 import pytest
@@ -31,22 +32,61 @@ def mock_category_object():
 
 @pytest.fixture
 def mock_month_record_object():
-    return [MonthRecord(id=1, descr='this is a month record')]
+    return [MonthRecord(
+        id=1,
+        descr='this is a payment',
+        year_num=2024,
+        amount=25.0,
+        is_positive=False,
+        month_id=1,
+        date_val=datetime.datetime.utcnow()
+    )]
 
 
 @pytest.fixture
 def mock_month_record_multi():
-    return [MonthRecord(id=1, descr='first'), MonthRecord(id=2, descr='second')]
+    return [
+        MonthRecord(
+            id=1,
+            descr='first',
+            date_val=datetime.datetime.utcnow(),
+            is_positive=True,
+            month_id=5,
+            amount=55.03,
+            year_num=2023
+        ),
+        MonthRecord(
+            id=2,
+            descr='second',
+            date_val=datetime.datetime.utcnow(),
+            is_positive=False,
+            month_id=5,
+            amount=55.33,
+            year_num=2024
+        )]
 
 
 @pytest.fixture
 def mock_month_record_object_no_list():
-    return MonthRecord(id=2, descr='second month record')
+    return MonthRecord(
+        id=2,
+        descr='second month record',
+        year_num=2024,
+        amount=150.01,
+        is_positive=True,
+        month_id=4,
+        date_val=datetime.datetime.utcnow()
+    )
 
 
 @pytest.fixture
 def mock_month_stat_object():
-    return [MonthStat(id=1)]
+    return [MonthStat(
+        id=1,
+        year_num=2024,
+        date_val=datetime.datetime.utcnow(),
+        month_id=2
+    )]
 
 
 @pytest.fixture

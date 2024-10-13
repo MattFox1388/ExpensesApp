@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -9,8 +9,8 @@ from models.dtos.month_stat_dto import MonthStatDto
 class MonthDto(BaseModel):
     id: int
     month_name: str
-    monthRecords: list[MonthRecordDto]
-    monthStats: list[MonthStatDto]
+    monthRecords: list[MonthRecordDto] = []
+    monthStats: list[MonthStatDto] = []
 
     class Config:
         orm_mode = True
