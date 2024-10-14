@@ -2,11 +2,12 @@ import axios from 'axios';
 
 export async function setRecordCategories(token: string, data: any[]) {
     const response = await axios.post(
-        process.env.BUDGET_API_URL + `/set_record_categories?token=${token}`,
+        process.env.BUDGET_API_URL + `/month-records-uncategorized`,
         data,
         {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
           },
           timeout: 5000 
         });
@@ -15,9 +16,12 @@ export async function setRecordCategories(token: string, data: any[]) {
 
 export async function getMonthRecordsUncat(token: string) {
     const response = await axios.get(
-        process.env.BUDGET_API_URL + `/get_month_records_uncat?token=${token}`,
+        process.env.BUDGET_API_URL + `/month-records-uncategorized`,
         {
           timeout: 8000,
+          headers:{
+           'Authorization': `Bearer ${token}`  
+          }
         },
       );
       console.log(`response: ${response}`);
@@ -27,11 +31,12 @@ export async function getMonthRecordsUncat(token: string) {
 //TODO: implement this
 export async function ignoreMonthRecord(token: string, data: number[]){
     const response =  await axios.post(
-        process.env.BUDGET_API_URL + `/ignore_uncategorized_items?token=${token}`,
+        process.env.BUDGET_API_URL + `/ignore-uncategorized-items`,
         data,
         {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
           },
           timeout: 5000 
         });

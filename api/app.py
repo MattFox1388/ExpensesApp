@@ -10,6 +10,10 @@ from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 
 from alcem import db
+from ingest.DiscoverStrategy import DiscoverStrategy
+from ingest.EduCheckingsStrategy import EduCheckingsStrategy
+from ingest.EduSavingsStrategy import EduSavingsStrategy
+from ingest.IngestContext import IngestContext
 from models.category import Category
 from models.dtos.month_dto import MonthDto, MonthDtoList
 from models.dtos.month_record_dto import MonthRecordDto, MonthRecordDtoList
@@ -53,11 +57,9 @@ def create_app(app_config=None):
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 
     db.init_app(app)
-    parse_checkings = ParseCheckings(db)
-    parse_savings = ParseSavings(db)
-    parse_disc = ParseDisc(db)
     uncategorized_service = UncategorizedItemsService(db)
     user_service = UserService(db)
+    ingest_context = IngestContext()
 
     def init_db():
         conn = mysql.connector.connect(**db_config)
@@ -223,31 +225,31 @@ def create_app(app_config=None):
         return json.dumps(month.id)
 
 
-    @app.route('/ingest_edu_checking', methods=['POST'])
+    @app.route('/edu-checking-data', methods=['POST'])
     @check_for_token
     def ingest_educators_checking_data():
         content = request.json
         print('content reg: {}'.format(content))
-        amount_processed = parse_checkings.process_rows(content)
-        parse_checkings.close_session()
+        ingest_context.set_strategy(EduCheckingsStrategy())
+        amount_processed = ingest_context.ingest(db, content)
         return jsonify({'amount_processed': amount_processed})
 
 
-    @app.route('/ingest_edu_saving', methods=['POST'])
+    @app.route('/edu-savings-data', methods=['POST'])
     @check_for_token
     def ingest_educators_saving_data():
         content = request.json
-        amount_processed = parse_savings.process_rows(content)
-        parse_savings.close_session()
+        ingest_context.set_strategy(EduSavingsStrategy())
+        amount_processed = ingest_context.ingest(db, content)
         return jsonify({'amount_processed': amount_processed})
 
 
-    @app.route('/ingest_disc', methods=['POST'])
+    @app.route('/discover-data', methods=['POST'])
     @check_for_token
     def ingest_discover_data():
         content = request.json
-        amount_processed = parse_disc.process_rows(content)
-        parse_disc.close_session()
+        ingest_context.set_strategy(DiscoverStrategy())
+        amount_processed = ingest_context.ingest(db, content)
         return jsonify({'amount_processed': amount_processed})
 
 

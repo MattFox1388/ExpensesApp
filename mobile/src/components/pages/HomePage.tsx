@@ -21,10 +21,11 @@ export const HomePage: React.FC = () => {
       const json = await readFile(path, false);
       console.log(`-----> json results: ${JSON.stringify(json)}`)
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/ingest_edu_checking?token=${token}`, json, {
+      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/edu-checkings-data`, json, {
         timeout: 10000,
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}` 
         }
       });
       console.log(`amountProcessed: ${JSON.stringify(amountProcessed.data)}`);
@@ -66,7 +67,13 @@ export const HomePage: React.FC = () => {
       const json = await readFile(path, false);
       console.log(`-----> json results: ${JSON.stringify(json)}`)
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/ingest_edu_saving?token=${token}`, json, {timeout: 10000});
+      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/edu-savings-data`, 
+        json, {
+          timeout: 10000,
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          }
+        });
       console.log(`amountProcessed: ${JSON.stringify(amountProcessed.data)}`);
       Toast.show({
         type: 'success',  
@@ -94,7 +101,13 @@ export const HomePage: React.FC = () => {
       const json = await readFile(path, true);
       console.log(`-----> json results: ${JSON.stringify(json)}`)
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/ingest_disc?token=${token}`, json, {timeout: 10000});
+      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/discover-data`,
+         json, {
+          timeout: 10000,
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          }
+        });
       console.log(`amountProcessed: ${JSON.stringify(amountProcessed.data)}`);
       Toast.show({
         type: 'success',  
