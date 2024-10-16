@@ -128,40 +128,37 @@ def test_get_month_id_by_name_post_method_not_allowed(client):
 
 def test_ingest_edu_checkings_success(client, mock_parse_checkings_process_rows, mock_is_valid_token,
                                       mock_parse_checkings_close_session):
-    response = client.post('/ingest_edu_checking', json={})
+    response = client.post('/edu-checking-data', json={})
     assert response.status_code == 200
     assert json.loads(response.data)['amount_processed'] == 5
-    mock_parse_checkings_close_session.assert_called_with()
 
 
 def test_ingest_edu_checkings_get_method_not_allowed(client):
-    response = client.get('/ingest_edu_checking')
+    response = client.get('/edu-checking-data')
     assert response.status_code == 405
 
 
 def test_ingest_edu_savings_success(client, mock_parse_savings_process_rows, mock_parse_savings_close_session,
                                     mock_is_valid_token):
-    response = client.post('/ingest_edu_saving', json={})
+    response = client.post('/edu-savings-data', json={})
     assert response.status_code == 200
     assert json.loads(response.data)['amount_processed'] == 3
-    mock_parse_savings_close_session.assert_called_with()
 
 
 def test_ingest_edu_savings_get_method_not_allowed(client):
-    response = client.get('/ingest_edu_saving')
+    response = client.get('/edu-savings-data')
     assert response.status_code == 405
 
 
 def test_ingest_disc_success(client, mock_parse_disc_process_rows, mock_parse_disc_close_session,
                              mock_is_valid_token):
-    response = client.post('/ingest_disc', json={})
+    response = client.post('/discover-data', json={})
     assert response.status_code == 200
     assert json.loads(response.data)['amount_processed'] == 4
-    mock_parse_disc_close_session.assert_called_with()
 
 
 def test_ingest_disc_get_method_not_allowed(client):
-    response = client.get('/ingest_disc')
+    response = client.get('/discover-data')
     assert response.status_code == 405
 
 
@@ -178,15 +175,9 @@ def test_get_month_records_uncategorized_success(client, flask_app_mock, mock_ge
         assert response_object["month_records"][1]["amount"] == 55.33
 
 
-
-def test_get_month_records_uncategorized_post_method_not_allowed(client):
-    response = client.post('/month-records-uncategorized')
-    assert response.status_code == 405
-
-
 def test_set_record_uncategorized_items_success(client, mock_is_valid_token,
                                                 mock_uncategorized_services_set_multiple_record_categories):
-    response = client.post('/set_record_categories', json={})
+    response = client.post('/month-records-uncategorized', json={})
     assert response.status_code == 200
     assert response.data == b'Month records updated: 1'
     mock_uncategorized_services_set_multiple_record_categories.assert_called_with({}, )

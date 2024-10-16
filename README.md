@@ -1,6 +1,8 @@
 # The Expenses App
 
-This app allows the user to ingest csv data from online banking sites. Only supporting Discover and Educator's Credit Union currently. Inspiration from hours of fiddling with google sheets to track my expenses from multiple sources. 
+This app allows the user to ingest csv data from online banking sites. 
+Only supporting Discover and Educator's Credit Union currently. 
+Inspiration from hours of fiddling with google sheets to track my expenses from multiple sources. 
 
 ## Installation
 
@@ -59,6 +61,7 @@ In the home page, use the login icon to either login or create a user.
 
 Afterward, go back to the homepage and upload your csv files from educators or discover.
 
-The Uncategorized Items page contains transactions that were not automatically categorized. Click on the category button to add a category for the selected transaction
+The Uncategorized Items page contains transactions that were not automatically categorized. 
+Click on the category button to add a category for the selected transaction
 
 Use the Find Month page to look at a specific month's data. 
