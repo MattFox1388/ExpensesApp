@@ -4,6 +4,7 @@ This app allows the user to ingest csv data from online banking sites.
 Only supporting Discover and Educator's Credit Union currently. 
 Inspiration from hours of fiddling with google sheets to track my expenses from multiple sources. 
 
+📈💰🏦
 ## Installation
 
 ### Mobile (React Native)
