@@ -7,6 +7,15 @@ services:
     env_file:
       - .env
     build: .
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /Budget_API
+          ignore:
+            - venv*/
+        - action: rebuild
+          path: requirements.txt
     links:
       - db
     ports:
@@ -22,6 +31,7 @@ services:
       - MYSQL_USER=user1
       - MYSQL_PASSWORD=pwd
       - MYSQL_ROOT_PASSWORD=pwd
+      - ALEMBIC_URI
     ports:
       - "32000:3306"
     healthcheck:

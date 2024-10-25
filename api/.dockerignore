@@ -1,0 +1,7 @@
+/.idea
+/.vscode
+/venv
+/venv2
+dump.sql
+pyc_delete.sh
+startup.ps1

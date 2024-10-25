@@ -22,9 +22,6 @@ from models.month import Month
 from models.monthRecord import MonthRecord
 from models.monthStat import MonthStat
 from models.user import User
-from services.parse_checkings import ParseCheckings
-from services.parse_disc import ParseDisc
-from services.parse_savings import ParseSavings
 from services.uncategorized_items_services import UncategorizedItemsService
 from services.user_service import UserService
 from shared.delete_data_db import delete_data_db
@@ -305,4 +302,5 @@ if __name__ == "__main__":
     app = create_app()
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    should_debug = True if os.getenv('FLASK_ENV') == 'development' else False
+    app.run(debug=should_debug)
