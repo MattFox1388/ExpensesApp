@@ -6,9 +6,13 @@ import { readFile } from '../../shared/CsvToJsonUtility';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
+import { handleAxiosError } from '../../shared/AxiosErrorUtility';
+import { useUsersContext } from '../../contexts/UsersContext';
 
 export const HomePage: React.FC = () => {
   const [showSpinner, setShowSpinner] = useState(false);
+  const {state: usersState, dispatch: usersDispatch} = useUsersContext();
+
   const onIngestEduCheckingPress = useCallback(async () => {
     console.log('starting checking processing...')
     try {
@@ -21,7 +25,7 @@ export const HomePage: React.FC = () => {
       const json = await readFile(path, false);
       console.log(`-----> json results: ${JSON.stringify(json)}`)
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/edu-checkings-data`, json, {
+      const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/edu-checking-data`, json, {
         timeout: 10000,
         headers: {
           "Content-Type": "application/json",
@@ -34,16 +38,14 @@ export const HomePage: React.FC = () => {
         text1: 'Success',
         text2: `Ingested ${amountProcessed.data["amount_processed"]} records`,
       });
-      setShowSpinner(false);
-    } catch (err: any) {
-      if (err.response) {
-        console.log(err.response.data);
-        console.log(err.response.status);
-        console.log(err.response.headers);
-      }
-      console.warn(err);
-      setShowSpinner(false)
+    } catch (error: any) {
+     if (axios.isAxiosError(error)) {
+      handleAxiosError(error, usersDispatch);
+      } else {
+        console.error(error);
+      } 
     }
+    setShowSpinner(false)
   }, []);
 
   const getUri = (response: any) => {
@@ -67,7 +69,7 @@ export const HomePage: React.FC = () => {
       const json = await readFile(path, false);
       console.log(`-----> json results: ${JSON.stringify(json)}`)
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/edu-savings-data`, 
+      const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/edu-savings-data`, 
         json, {
           timeout: 10000,
           headers: {
@@ -80,15 +82,14 @@ export const HomePage: React.FC = () => {
         text1: 'Success',
         text2: `Ingested ${amountProcessed.data["amount_processed"]} records`,
       });
-      setShowSpinner(false);
-    } catch (err: any) {
-      if (err.response) {
-        console.log(err.response.data);
-        console.log(err.response.status);
-        console.log(err.response.headers);
-      }
-      console.warn(err);
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        handleAxiosError(error, usersDispatch);
+        } else {
+          console.error(error);
+        } 
     }
+    setShowSpinner(false);
   }, []);    
 
   const onIngestDiscPress = useCallback(async () => {
@@ -101,7 +102,7 @@ export const HomePage: React.FC = () => {
       const json = await readFile(path, true);
       console.log(`-----> json results: ${JSON.stringify(json)}`)
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.BUDGET_API_URL + `/discover-data`,
+      const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/discover-data`,
          json, {
           timeout: 10000,
           headers: {
@@ -114,15 +115,15 @@ export const HomePage: React.FC = () => {
         text1: 'Success',
         text2: `Ingested ${amountProcessed.data["amount_processed"]} records`,
       });
-      setShowSpinner(false);
-    } catch (err: any) {
-      if (err.response) {
-        console.log(err.response.data);
-        console.log(err.response.status);
-        console.log(err.response.headers);
-      }
-      console.warn(err);
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        handleAxiosError(error, usersDispatch);
+        } else {
+          console.error(error);
+        }  
     }
+    setShowSpinner(false);
+
   }, []); 
 
 
@@ -188,6 +189,5 @@ const styles = StyleSheet.create({
     elevation: 3,
     backgroundColor: '#24a0ed',
     marginLeft: 10,
-    activeOpacity: 0.8
   },
 });

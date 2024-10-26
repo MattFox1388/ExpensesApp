@@ -4,11 +4,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import {
-  convertToTableFormat,
   convertToUncategorizedItem,
   UncategorizedItem,
 } from '../../shared/UncategorizedItem';
@@ -24,6 +22,8 @@ import { CategoryType } from '../../shared/CategoryEnum';
 import { getMonthRecordsUncat, ignoreMonthRecord, setRecordCategories } from '../../services/ApiService';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { handleAxiosError } from '../../shared/AxiosErrorUtility';
+import { useUsersContext } from '../../contexts/UsersContext';
 
 const tableColumns = ['date', 'description', 'amount', 'options'];
 
@@ -36,6 +36,7 @@ export const UncategorizedItemsPage: React.FC = () => {
   const [modalValue, setModalValue] = React.useState(CategoryType.Need);
   const [modalTitle, setModalTitle] = useState('');
   const [modalIndex, setModalIndex] = useState(0);
+  const {state: usersState, dispatch: usersDispatch} = useUsersContext();
   
   const setUncategorizedItemsFn = async () => {
       const token = await AsyncStorage.getItem('login_token');
@@ -52,9 +53,10 @@ export const UncategorizedItemsPage: React.FC = () => {
         setUncategorizedItems(uncategorizedItems);
       } catch (error: any) {
         if (axios.isAxiosError(error)) {
-          const axAndroidError = error as AxiosError;
-          console.log('axAndroid error: ' + axAndroidError);
-        }
+          handleAxiosError(error, usersDispatch);
+          } else {
+            console.error(error);
+          } 
       }
       setShowSpinner(false);
     };
@@ -91,9 +93,10 @@ export const UncategorizedItemsPage: React.FC = () => {
         await ignoreMonthRecord(token ?? '', [uncategorizedItems[modalIndex].month_id]);
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
-        const axAndroidError = error as AxiosError;
-        console.log('axAndroid error: ' + axAndroidError);
-      }
+        handleAxiosError(error, usersDispatch);
+        } else {
+          console.error(error);
+        }  
     }
     setShowSpinner(false);
     await setUncategorizedItemsFn();

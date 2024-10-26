@@ -48,13 +48,24 @@ $ docker-compose down
 ```
 
 
-##y
 ## Integration Tests With Pytest
 - You must run test-db docker container inside the docker-compose.test.yml file
 - You can run integration tests with following command inside integration folder
 ```commandline
 pytest --dburl=mysql+pymysql://root:pwd@127.0.0.1:32001 --dbname=budget -v --tb=no --disable-warnings
 ```
+
+
+## Migrations with Alembic
+- Command to run latest migrations:
+```commandline
+alembic upgrade head
+```
+- Command to rollback all migrations:
+```commandline
+alembic downgrade base
+```
+
 
 ## Usage
 

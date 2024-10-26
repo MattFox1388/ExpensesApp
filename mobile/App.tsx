@@ -12,6 +12,7 @@ import {SettingsPage} from '../mobile/src/components/pages/SettingsPage';
 import {navigationRef} from './src/navigation/RootNavigation';
 import {LoginPage} from './src/components/pages/LoginPage';
 import Toast from 'react-native-toast-message';
+import { CreateUserPage } from './src/components/pages/CreateUserPage';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,7 @@ const App: React.FC = () => {
           <Stack.Screen name="YtdStatsPage" component={YtdStatsPage} />
           <Stack.Screen name="SettingsPage" component={SettingsPage} />
           <Stack.Screen name="LoginPage" component={LoginPage} />
+          <Stack.Screen name="CreateUserPage" component={CreateUserPage} />
         </Stack.Navigator>
       </NavigationContainer>
       <Toast/>

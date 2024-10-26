@@ -13,6 +13,8 @@ import axios from 'axios';
 import {AxiosError} from 'axios';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { handleAxiosError, isForbiddenError } from '../../shared/AxiosErrorUtility';
+import { useUsersContext } from '../../contexts/UsersContext';
 
 export const FindMonthPage: React.FC = () => {
   const [monthStatData, setMonthStatData] = useState<MonthStatResponse[]>([]);
@@ -21,6 +23,7 @@ export const FindMonthPage: React.FC = () => {
   >([]);
   const [selected, setSelected] = React.useState<number | null>(null);
   const [showSpinner, setShowSpinner] = useState(false);
+  const {state: usersState, dispatch: usersDispatch} = useUsersContext();
 
   useEffect(() => {
     const getMonthStat = async () => {
@@ -30,7 +33,7 @@ export const FindMonthPage: React.FC = () => {
       try {
         //axios get request with 
         setShowSpinner(true);
-        const response = await axios.get(process.env.BUDGET_API_URL + '/month-stats', {
+        const response = await axios.get(process.env.EXPO_PUBLIC_BUDGET_API_URL + '/month-stats', {
           headers: {
             'Authorization': `Bearer ${token}` 
           },
@@ -47,13 +50,9 @@ export const FindMonthPage: React.FC = () => {
         );
       } catch (error: any) {
         if (axios.isAxiosError(error)) {
-          const axiosError = error as AxiosError;
-          console.log('axios error: ' + axiosError);
-          Toast.show({
-            type: 'error',
-            text1: 'Error',
-            text2: "Are you sure you're logged in?"
-          });
+          handleAxiosError(error, usersDispatch);
+        } else {
+          console.error(error);
         }
       }
       setShowSpinner(false);
