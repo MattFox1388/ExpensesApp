@@ -25,6 +25,7 @@ from models.user import User
 from services.uncategorized_items_services import UncategorizedItemsService
 from services.user_service import UserService
 from shared.delete_data_db import delete_data_db
+from shared.exceptions import InvalidIngestRequestDataException
 from shared.sqlite_create import initialize_db
 from shared.token import is_token_valid
 
@@ -156,43 +157,43 @@ def create_app(app_config=None):
         return json.dumps(category.id)
 
 
-    @app.route('/month-records', methods=['GET'])
+    @app.route('/month-records/user/<username>', methods=['GET'])
     @check_for_token
-    def get_month_records():
-        records = MonthRecord.query.all()
+    def get_month_records(username):
+        records = MonthRecord.query.filter_by(username=username).all()
         dtos = map(lambda item: MonthRecordDto.from_orm(item), records)
         return MonthRecordDtoList(month_records=list(dtos)).json()
 
 
-    @app.route('/month-stats', methods=['GET'])
+    @app.route('/month-stats/user/<username>', methods=['GET'])
     @check_for_token
-    def get_month_stats():
-        stats = MonthStat.query.all()
+    def get_month_stats(username):
+        stats = MonthStat.query.filter_by(username=username).all()
         dtos = map(lambda item: MonthStatDto.from_orm(item), stats)
         month_stats = MonthStatDtoList(month_stats=list(dtos)).json()
         print("json: {}".format(month_stats))
         return month_stats
 
 
-    @app.route('/month-stats/year/<year>', methods=['GET'])
+    @app.route('/month-stats/year/<year>/user/<username>', methods=['GET'])
     @check_for_token
-    def get_month_stats_by_year(year):
+    def get_month_stats_by_year(year, username):
         try:
             year = valid_year(year)
             print('year: {}'.format(year))
         except ValueError:
             return "Invalid year", 400
 
-        month_stats = MonthStat.query.filter_by(year_num=year).all()
+        month_stats = MonthStat.query.filter_by(year_num=year, username=username).all()
         dtos = map(lambda item: MonthStatDto.from_orm(item), month_stats)
         json = MonthStatDtoList(month_stats=list(dtos)).json()
         print('response: {}'.format(json))
         return json
 
 
-    @app.route('/month-records/year/<year_num>/month/<month_val>', methods=['GET'])
+    @app.route('/month-records/year/<year_num>/month/<month_val>/user/<username>', methods=['GET'])
     @check_for_token
-    def get_month_records_by_year_and_month(year_num, month_val):
+    def get_month_records_by_year_and_month(year_num, month_val, username):
         try:
             year = valid_year(year_num)
             month = valid_month(month_val)
@@ -200,7 +201,7 @@ def create_app(app_config=None):
             return "Invalid year or month parameter", 400
 
         month = Month.query.filter_by(month_name=month).one_or_none()
-        month_records = MonthRecord.query.filter_by(month_id=month.id, year_num=year).all()
+        month_records = MonthRecord.query.filter_by(month_id=month.id, year_num=year, username=username).all()
         dtos = map(lambda item: MonthRecordDto.from_orm(item), month_records)
         return MonthRecordDtoList(month_records=list(dtos)).json()
 
@@ -228,7 +229,10 @@ def create_app(app_config=None):
         content = request.json
         print('content reg: {}'.format(content))
         ingest_context.set_strategy(EduCheckingsStrategy())
-        amount_processed = ingest_context.ingest(db, content)
+        try:
+            amount_processed = ingest_context.ingest(db, content)
+        except InvalidIngestRequestDataException as error:
+            return error.message, 400
         return jsonify({'amount_processed': amount_processed})
 
 
@@ -237,7 +241,10 @@ def create_app(app_config=None):
     def ingest_educators_saving_data():
         content = request.json
         ingest_context.set_strategy(EduSavingsStrategy())
-        amount_processed = ingest_context.ingest(db, content)
+        try:
+            amount_processed = ingest_context.ingest(db, content)
+        except InvalidIngestRequestDataException as error:
+            return error.message, 400
         return jsonify({'amount_processed': amount_processed})
 
 
@@ -246,14 +253,17 @@ def create_app(app_config=None):
     def ingest_discover_data():
         content = request.json
         ingest_context.set_strategy(DiscoverStrategy())
-        amount_processed = ingest_context.ingest(db, content)
+        try:
+            amount_processed = ingest_context.ingest(db, content)
+        except InvalidIngestRequestDataException as error:
+            return error.message, 400
         return jsonify({'amount_processed': amount_processed})
 
 
-    @app.route('/month-records-uncategorized', methods=['GET'])
+    @app.route('/month-records-uncategorized/users/<username>', methods=['GET'])
     @check_for_token
-    def get_month_records_uncategorized():
-        month_records_uncat = MonthRecord.query.filter_by(cat_id=None)
+    def get_month_records_uncategorized(username):
+        month_records_uncat = MonthRecord.query.filter_by(cat_id=None, username=username)
         dtos = map(lambda item: MonthRecordDto.from_orm(item), month_records_uncat)
         return MonthRecordDtoList(month_records=list(dtos)).json()
 

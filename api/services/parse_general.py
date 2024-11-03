@@ -78,11 +78,11 @@ class ParseGeneral:
         self.db = None
 
     @abstractmethod
-    def process_rows(self, rows):
+    def process_rows(self, rows, username):
         pass
 
     @abstractmethod
-    def add_category_to_rows(self, rows):
+    def add_category_to_rows(self, rows, username):
         pass
 
     @abstractmethod
@@ -92,7 +92,7 @@ class ParseGeneral:
     def close_session(self):
         self.db.session.close()
 
-    def add_row_to_db(self, info_dict):
+    def add_row_to_db(self, info_dict, username):
         month, day, year = get_date_pieces(info_dict['date'])
         result_cat = None
         datetime_inst = datetime.datetime(year=year, month=month, day=day)
@@ -104,15 +104,18 @@ class ParseGeneral:
         does_exist_record = MonthRecord.query.filter_by(year_num=year,
                                                         date_val=datetime_inst,
                                                         amount=info_dict['amount'][1:],
-                                                        descr=info_dict['description']).first()
+                                                        descr=info_dict['description'],
+                                                        username=username
+                                                        ).first()
         if does_exist_record is None and info_dict['category'] != 'Ignore':
             month_record_to_insert = MonthRecord(year_num=year, date_val=datetime.datetime(year, month, day),
                                                  amount=info_dict['amount'][1:], descr=info_dict['description'],
                                                  month_id=month, is_positive=info_dict['is_positive'],
+                                                 username=username,
                                                  cat_id=result_cat.id if result_cat is not None else None)
             self.db.session.add(month_record_to_insert)
             if result_cat is not None:
-                self.update_month_stat_row(result_cat.cat_type, info_dict['amount'][1:], year, month)
+                self.update_month_stat_row(result_cat.cat_type, info_dict['amount'][1:], year, month, username)
 
             self.db.session.commit()
 
@@ -120,8 +123,8 @@ class ParseGeneral:
             return month_record_to_insert.id
         return None
 
-    def update_month_stat_row(self, category, amount, year, month):
-        month_stat_row = MonthStat.query.filter_by(year_num=year, month_id=month).one_or_none()
+    def update_month_stat_row(self, category, amount, year, month, username):
+        month_stat_row = MonthStat.query.filter_by(year_num=year, month_id=month, username=username).one_or_none()
         needs, other, paycheck, savings, wants = get_month_stat_category_amounts(category,
                                                                                  amount, month,
                                                                                  year)
@@ -129,8 +132,11 @@ class ParseGeneral:
         if month_stat_row is None:
             month_stat_to_insert = MonthStat(month_id=month, year_num=year, date_val=datetime.date.today(),
                                              needs_actual=needs,
-                                             wants_actual=wants, savings_actual=savings, paycheck_actual=paycheck,
-                                             other_actual=other)
+                                             wants_actual=wants,
+                                             savings_actual=savings,
+                                             paycheck_actual=paycheck,
+                                             other_actual=other,
+                                             username=username)
             self.db.session.add(month_stat_to_insert)
         else:
             month_stat_row.needs_actual += needs

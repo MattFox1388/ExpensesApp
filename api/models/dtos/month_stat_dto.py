@@ -21,6 +21,7 @@ class MonthStatDto(BaseModel):
     wants_actual: Optional[float]
     savings_actual: Optional[float]
     month_id: int
+    username: str
 
     class Config:
         orm_mode = True

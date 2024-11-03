@@ -38,7 +38,7 @@ def upgrade() -> None:
     sa.Column('password_hash', sa.String(length=280), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=False)
+    op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
     op.create_table('month_record',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('year_num', sa.Integer(), nullable=False),

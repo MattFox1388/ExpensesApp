@@ -25,13 +25,13 @@ class ParseSavings(ParseGeneral):
                 self.db.session.add(uncategorized_item)
                 self.db.session.commit()
 
-    def process_rows(self, rows):
-        categorized_rows, expense_or_ignore_rows, want_need_saving_rows = self.add_category_to_rows(rows)
+    def process_rows(self, rows, username):
+        categorized_rows, expense_or_ignore_rows, want_need_saving_rows = self.add_category_to_rows(rows, username)
         amount_rows_processed = len(categorized_rows) + len(expense_or_ignore_rows) + len(want_need_saving_rows)
         self.add_uncategorized_rows_to_be_revisited(expense_or_ignore_rows, want_need_saving_rows)
         return amount_rows_processed
 
-    def add_category_to_rows(self, rows):
+    def add_category_to_rows(self, rows, username):
         print('rows: {}'.format(rows))
         categorized_rows = []
         expense_or_ignore_rows = []
@@ -40,7 +40,7 @@ class ParseSavings(ParseGeneral):
             print('is it dict or list: {}'.format(type(row) is dict or type(row) is list))
             if type(row) is dict or type(row) is list:
                 info_dict, expense_or_ignore_prompt, want_need_saving_prompt = self.add_category_to_row(row)
-                month_record_id = self.add_row_to_db(info_dict)
+                month_record_id = self.add_row_to_db(info_dict, username)
                 if month_record_id is not None:
                     if expense_or_ignore_prompt is True:
                         expense_or_ignore_rows.append(month_record_id)

@@ -35,7 +35,10 @@ class UncategorizedItemsService:
     def set_multiple_record_categories(self, uncategorized_items):
         month_records_updated = 0
         for uncategorized_item in uncategorized_items:
-            self.set_single_record_categories(uncategorized_item['month_record_id'], uncategorized_item['cat_id'])
+            self.set_single_record_categories(
+                uncategorized_item['month_record_id'],
+                uncategorized_item['cat_id'],
+            )
             month_records_updated += 1
         self.close_session()
         return jsonify('Month records updated: {}'.format(month_records_updated))
@@ -44,7 +47,7 @@ class UncategorizedItemsService:
         month_record_to_update, cat_name = update_month_record(month_record_id, cat_id)
         uncat_item_id = month_record_to_update.uncategorizedItems[0].id
         self.update_month_stat_record(month_record_to_update.year_num, month_record_to_update.month_id, cat_name,
-                                      month_record_to_update.amount)
+                                      month_record_to_update.amount, month_record_to_update.username)
         uncat_item = UncategorizedItem.query.filter_by(id=uncat_item_id).one_or_none()
         self.db.session.delete(uncat_item)
 
@@ -65,15 +68,15 @@ class UncategorizedItemsService:
             self.db.session.delete(month_record)
         self.db.session.commit()
 
-    def update_month_stat_record(self, year, month, cat_name, amount):
-        month_stat_row = MonthStat.query.filter_by(year_num=year, month_id=month).one_or_none()
+    def update_month_stat_record(self, year, month, cat_name, amount, username):
+        month_stat_row = MonthStat.query.filter_by(year_num=year, month_id=month, username=username).one_or_none()
         needs, other, paycheck, savings, wants = get_month_stat_category_amounts(cat_name, amount, month, year)
 
         if month_stat_row is None:
             new_month_stat = MonthStat(month_id=month, year_num=year, date_val=datetime.date.today(),
                                        needs_actual=needs,
                                        wants_actual=wants, savings_actual=savings, paycheck_actual=paycheck,
-                                       other_actual=other)
+                                       other_actual=other, username=username)
             self.db.session.add(new_month_stat)
         else:
             month_stat_row.needs_actual += needs

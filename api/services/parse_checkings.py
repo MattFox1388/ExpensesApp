@@ -26,20 +26,20 @@ class ParseCheckings(ParseGeneral):
                 self.db.session.add(uncategorized_item)
                 self.db.session.commit()
 
-    def process_rows(self, rows):
-        categorized_rows, want_need_rows, want_need_saving_rows = self.add_category_to_rows(rows)
+    def process_rows(self, rows, username):
+        categorized_rows, want_need_rows, want_need_saving_rows = self.add_category_to_rows(rows, username)
         amount_rows_processed = len(categorized_rows) + len(want_need_rows) + len(want_need_saving_rows)
         self.add_uncategorized_rows_to_be_revisited(want_need_rows, want_need_saving_rows)
         return amount_rows_processed
 
-    def add_category_to_rows(self, rows):
+    def add_category_to_rows(self, rows, username):
         print('rows: {}'.format(rows))
         categorized_rows = []
         want_need_rows = []
         want_need_saving_rows = []
         for row in rows:
             info_dict, want_need_prompt, want_need_saving_prompt = self.add_category_to_row(row)
-            month_record_id = self.add_row_to_db(info_dict)
+            month_record_id = self.add_row_to_db(info_dict, username)
             if month_record_id is not None:
                 if want_need_prompt is True:
                     want_need_rows.append(month_record_id)

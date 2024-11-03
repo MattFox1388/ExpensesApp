@@ -20,6 +20,7 @@ class MonthStat(db.Model):
     wants_actual: float = db.Column(db.Float, nullable=True)
     savings_actual: float = db.Column(db.Float, nullable=True)
     month_id: int = db.Column(db.Integer, db.ForeignKey('month.id'))
+    username: str = db.Column(db.String(255), db.ForeignKey('user.username'))
 
     def __repr__(self):
         return 'id: {}, year_num: {}, date: {}, paycheck_planned: {}, other_planned: {}...'.format(self.id,

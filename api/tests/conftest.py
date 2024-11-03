@@ -1,5 +1,4 @@
 import datetime
-from venv import create
 
 import pytest
 from flask import Flask
@@ -39,7 +38,8 @@ def mock_month_record_object():
         amount=25.0,
         is_positive=False,
         month_id=1,
-        date_val=datetime.datetime.utcnow()
+        date_val=datetime.datetime.utcnow(),
+        username='test-user'
     )]
 
 
@@ -53,7 +53,8 @@ def mock_month_record_multi():
             is_positive=True,
             month_id=5,
             amount=55.03,
-            year_num=2023
+            year_num=2023,
+            username='test-user'
         ),
         MonthRecord(
             id=2,
@@ -62,7 +63,8 @@ def mock_month_record_multi():
             is_positive=False,
             month_id=5,
             amount=55.33,
-            year_num=2024
+            year_num=2024,
+            username='test-user'
         )]
 
 
@@ -75,7 +77,8 @@ def mock_month_record_object_no_list():
         amount=150.01,
         is_positive=True,
         month_id=4,
-        date_val=datetime.datetime.utcnow()
+        date_val=datetime.datetime.utcnow(),
+        username='test-user'
     )
 
 
@@ -85,7 +88,8 @@ def mock_month_stat_object():
         id=1,
         year_num=2024,
         date_val=datetime.datetime.utcnow(),
-        month_id=2
+        month_id=2,
+        username='test-user'
     )]
 
 

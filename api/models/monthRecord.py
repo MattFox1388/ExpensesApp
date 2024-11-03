@@ -1,5 +1,3 @@
-from datetime import date
-
 from alcem import db
 
 
@@ -12,6 +10,7 @@ class MonthRecord(db.Model):
     is_positive: bool = db.Column(db.Boolean, nullable=False)
     month_id: int = db.Column(db.Integer, db.ForeignKey('month.id'))
     cat_id: int = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+    username: str = db.Column(db.String(255), db.ForeignKey('user.username'))
     uncategorizedItems = db.relationship('UncategorizedItem')
 
     def __repr__(self):
