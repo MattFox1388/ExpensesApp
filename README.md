@@ -20,6 +20,17 @@ Then run npx expo. You can use flags (--localhost --ios) to run a simulator on y
 $ npx expo start -c
 ```
 
+## Run Jest Tests (IDE Agnostic)
+You can use node --inspect command to run jest tests. You will want to visit chrome://inspect to get debug window.
+
+Run this command to test a specific file:
+
+```commandline
+node --inspect node_modules/.bin/jest --runInBand src/shared/__tests__/CsvToJsonUtility.test.ts
+```
+
+Add 'debugger;' to the line you want break at!
+
 ### Backend API
 You want to build a .env file in the /api folder. 
 

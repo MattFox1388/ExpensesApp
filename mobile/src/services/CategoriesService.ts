@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-export async function setRecordCategories(token: string, data: any[]) {
+const BUDGET_API_URL = process.env.EXPO_PUBLIC_BUDGET_API_URL || '';
+export async function setRecordCategories(
+  token: string,
+  data: any[],
+  username: string,
+) {
+  // eslint-disable-next-line no-console
   const response = await axios.post(
-    `${process.env.EXPO_PUBLIC_BUDGET_API_URL}/month-records-uncategorized`,
+    `${BUDGET_API_URL}/month-records-uncategorized`,
     data,
     {
       headers: {
@@ -15,9 +21,10 @@ export async function setRecordCategories(token: string, data: any[]) {
   );
 }
 
-export async function getMonthRecordsUncat(token: string) {
+export async function getMonthRecordsUncat(token: string, username: string) {
+  // eslint-disable-next-line no-console
   const response = await axios.get(
-    `${process.env.EXPO_PUBLIC_BUDGET_API_URL}/month-records-uncategorized`,
+    `${BUDGET_API_URL}/month-records-uncategorized/users/${username}`,
     {
       timeout: 8000,
       headers: {
@@ -30,7 +37,7 @@ export async function getMonthRecordsUncat(token: string) {
 
 export async function ignoreMonthRecord(token: string, data: number[]) {
   const response = await axios.post(
-    `${process.env.EXPO_PUBLIC_BUDGET_API_URL}/ignore-uncategorized-items`,
+    `${BUDGET_API_URL}/ignore-uncategorized-items`,
     data,
     {
       headers: {

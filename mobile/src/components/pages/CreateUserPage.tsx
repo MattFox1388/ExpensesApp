@@ -27,7 +27,7 @@ export const CreateUserPage: React.FC = () => {
         Tests that password will have one uppercase character, 
         one special character, and 8+ characters total
     */
-    const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
+    const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*=])(?=.{8,100})/;
     return regex.test(input);
   };
 
@@ -43,7 +43,7 @@ export const CreateUserPage: React.FC = () => {
     }
 
     if (!validatePassword(user.password)) {
-      setError('Password must be at least 8 characters long, contain 1 uppercase letter, and 1 special character');
+      setError('Password must be at least 8 characters long, contain 1 uppercase letter, and 1 special character (!,@,#,$,%,^,&,*,=)');
       return;
     }
 

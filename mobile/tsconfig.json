@@ -12,7 +12,7 @@
     "noEmit": true,
     "strict": true,
     "target": "esnext",
-    "types": ["cypress", "cypress-file-upload"]
+    "types": ["cypress", "cypress-file-upload", "jest"]
   },
   "exclude": [
     "node_modules",

@@ -9,6 +9,12 @@ import * as DocumentPicker from 'expo-document-picker';
 import { handleAxiosError } from '../../shared/AxiosErrorUtility';
 import { useUsersContext } from '../../contexts/UsersContext';
 
+interface IngestRequest {
+  rows: Array<any>;
+  username: string | null;
+
+}
+
 export const HomePage: React.FC = () => {
   const [showSpinner, setShowSpinner] = useState(false);
   const {state: usersState, dispatch: usersDispatch} = useUsersContext();
@@ -23,16 +29,15 @@ export const HomePage: React.FC = () => {
       const path = getUri(response)
       setShowSpinner(true);
       const json = await readFile(path, false);
-      console.log(`-----> json results: ${JSON.stringify(json)}`)
+      const requestData: IngestRequest = {rows: json, username: usersState.username};
       const token = await AsyncStorage.getItem('login_token');
-      const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/edu-checking-data`, json, {
+      const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/edu-checking-data`, requestData, {
         timeout: 10000,
         headers: {
           "Content-Type": "application/json",
           'Authorization': `Bearer ${token}` 
         }
       });
-      console.log(`amountProcessed: ${JSON.stringify(amountProcessed.data)}`);
       Toast.show({
         type: 'success',  
         text1: 'Success',
@@ -46,13 +51,12 @@ export const HomePage: React.FC = () => {
       } 
     }
     setShowSpinner(false)
-  }, []);
+  }, [usersState]);
 
   const getUri = (response: any) => {
     console.log(response.assets)
       const assetsList = response.assets ?? []
       const assetsSize = response?.assets?.length ?? 0
-      console.log(`asset size: ${assetsSize}`)
       if(!assetsList[assetsSize - 1].uri ) {
         throw Error("The processing failed at getting uri.")
       }
@@ -67,16 +71,15 @@ export const HomePage: React.FC = () => {
       const path = getUri(response)
       setShowSpinner(true);
       const json = await readFile(path, false);
-      console.log(`-----> json results: ${JSON.stringify(json)}`)
+      const requestData: IngestRequest = {rows: json, username: usersState.username};
       const token = await AsyncStorage.getItem('login_token');
       const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/edu-savings-data`, 
-        json, {
+        requestData, {
           timeout: 10000,
           headers: {
             'Authorization': `Bearer ${token}` 
           }
         });
-      console.log(`amountProcessed: ${JSON.stringify(amountProcessed.data)}`);
       Toast.show({
         type: 'success',  
         text1: 'Success',
@@ -90,7 +93,7 @@ export const HomePage: React.FC = () => {
         } 
     }
     setShowSpinner(false);
-  }, []);    
+  }, [usersState]);    
 
   const onIngestDiscPress = useCallback(async () => {
     try {
@@ -100,16 +103,15 @@ export const HomePage: React.FC = () => {
       const path = getUri(response)
       setShowSpinner(true);
       const json = await readFile(path, true);
-      console.log(`-----> json results: ${JSON.stringify(json)}`)
+      const requestData: IngestRequest = {rows: json, username: usersState.username};
       const token = await AsyncStorage.getItem('login_token');
       const amountProcessed = await axios.post(process.env.EXPO_PUBLIC_BUDGET_API_URL + `/discover-data`,
-         json, {
+        requestData, {
           timeout: 10000,
           headers: {
             'Authorization': `Bearer ${token}` 
           }
         });
-      console.log(`amountProcessed: ${JSON.stringify(amountProcessed.data)}`);
       Toast.show({
         type: 'success',  
         text1: 'Success',
@@ -124,7 +126,7 @@ export const HomePage: React.FC = () => {
     }
     setShowSpinner(false);
 
-  }, []); 
+  }, [usersState]); 
 
 
   return (

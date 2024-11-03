@@ -19,7 +19,6 @@ export const MonthStats: React.FC<MonthStatsProps> = ({selectedMonthStats}) => {
   >([]);
 
   useEffect(() => {
-    console.log(`month stats: ${selectedMonthStats.savings_actual}`);
     setActualChart([
       {x: 'needs', y: selectedMonthStats.needs_actual ?? 0},
       {x: 'wants', y: selectedMonthStats.wants_actual ?? 0},
@@ -27,7 +26,7 @@ export const MonthStats: React.FC<MonthStatsProps> = ({selectedMonthStats}) => {
       {x: 'paycheck', y: selectedMonthStats.paycheck_actual ?? 0},
       {x: 'other', y: selectedMonthStats.other_actual ?? 0},
     ]);
-  }, []);
+  }, [selectedMonthStats]);
 
   const getLeftover = () => {
     let income = 0;
@@ -52,6 +51,13 @@ export const MonthStats: React.FC<MonthStatsProps> = ({selectedMonthStats}) => {
         <Text style={styles.pieChartLabel}>Chart: </Text>
         <VictoryPie
           data={actualChart}
+          labels={({datum}) => {
+            const jsonPretty = JSON.stringify(datum, null, 2); 
+            if (datum['y'] > 0) {
+              return datum.x
+            }
+            return "" 
+          }}
           width={250}
           height={250}
           innerRadius={50}

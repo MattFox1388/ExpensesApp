@@ -11,6 +11,7 @@ import {
   UncategorizedItem,
 } from '../../shared/UncategorizedItem';
 import * as _ from 'underscore';
+import Toast from 'react-native-toast-message';
 import {
   DataTable,
   Button,
@@ -19,13 +20,18 @@ import {
   RadioButton,
 } from 'react-native-paper';
 import { CategoryType } from '../../shared/CategoryEnum';
-import { getMonthRecordsUncat, ignoreMonthRecord, setRecordCategories } from '../../services/ApiService';
+import { getMonthRecordsUncat, ignoreMonthRecord, setRecordCategories } from '../../services/CategoriesService';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleAxiosError } from '../../shared/AxiosErrorUtility';
 import { useUsersContext } from '../../contexts/UsersContext';
 
 const tableColumns = ['date', 'description', 'amount', 'options'];
+interface ErrorState {
+  isError: boolean;
+  title: string;
+  description: string;
+}
 
 export const UncategorizedItemsPage: React.FC = () => {
   const [uncategorizedItems, setUncategorizedItems] = React.useState<
@@ -36,6 +42,11 @@ export const UncategorizedItemsPage: React.FC = () => {
   const [modalValue, setModalValue] = React.useState(CategoryType.Need);
   const [modalTitle, setModalTitle] = useState('');
   const [modalIndex, setModalIndex] = useState(0);
+  const [error, setError] = useState<ErrorState>({
+    isError: false,
+    title: '',
+    description: ''
+  });
   const {state: usersState, dispatch: usersDispatch} = useUsersContext();
   
   const setUncategorizedItemsFn = async () => {
@@ -43,7 +54,7 @@ export const UncategorizedItemsPage: React.FC = () => {
       // get uncategorized items
       setShowSpinner(true);
       try {
-       const response = await getMonthRecordsUncat(token ?? '') ;
+       const response = await getMonthRecordsUncat(token ?? '', usersState.username!!) ;
 
         const uncategorizedItems: UncategorizedItem[] = response.data[
           'month_records'
@@ -57,6 +68,11 @@ export const UncategorizedItemsPage: React.FC = () => {
           } else {
             console.error(error);
           } 
+          Toast.show({
+            type: 'error',
+            text1: 'Error Occurred When Receiving uncategorized items',
+            text2: `Details: ${error.message || "None"}`
+          }) 
       }
       setShowSpinner(false);
     };
@@ -88,7 +104,7 @@ export const UncategorizedItemsPage: React.FC = () => {
 
     try {
       if ((modalValue + 1) != 6)
-        await setRecordCategories(token ?? '', data);
+        await setRecordCategories(token ?? '', data, usersState.username!!);
       else
         await ignoreMonthRecord(token ?? '', [uncategorizedItems[modalIndex].month_id]);
     } catch (error: any) {
@@ -97,6 +113,11 @@ export const UncategorizedItemsPage: React.FC = () => {
         } else {
           console.error(error);
         }  
+        Toast.show({
+          type: 'error',
+          text1: 'Error Occurred When Receiving uncategorized items',
+          text2: `Details: ${error.message || "None"}`
+        }) 
     }
     setShowSpinner(false);
     await setUncategorizedItemsFn();

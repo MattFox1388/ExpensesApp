@@ -1,80 +1,37 @@
-import React, {useEffect, useState} from 'react';
-import {
-  Text,
-  View,
-  ActivityIndicator,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import {SelectList} from 'react-native-dropdown-select-list';
-import {MonthStatResponse} from '../../../types/MonthStatResponse';
-import {MonthStats} from './MonthStats';
-import axios from 'axios';
-import {AxiosError} from 'axios';
-import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { handleAxiosError, isForbiddenError } from '../../shared/AxiosErrorUtility';
-import { useUsersContext } from '../../contexts/UsersContext';
+import React, { useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { useMonthStats } from "../../hooks/useMonthStats";
+import { MonthStats } from "./MonthStats";
+import { SelectList } from "react-native-dropdown-select-list";
 
 export const FindMonthPage: React.FC = () => {
-  const [monthStatData, setMonthStatData] = useState<MonthStatResponse[]>([]);
-  const [selectListData, setSelectListData] = useState<
-    {key: number; value: string}[]
-  >([]);
-  const [selected, setSelected] = React.useState<number | null>(null);
-  const [showSpinner, setShowSpinner] = useState(false);
-  const {state: usersState, dispatch: usersDispatch} = useUsersContext();
+  const [selected, setSelected] = useState<number | null>(null);
+  const { monthStatData, selectListData, isLoading } = useMonthStats();
 
-  useEffect(() => {
-    const getMonthStat = async () => {
-      console.log('getMonthStat() called');
-      const token = await AsyncStorage.getItem('login_token');
-
-      try {
-        //axios get request with 
-        setShowSpinner(true);
-        const response = await axios.get(process.env.EXPO_PUBLIC_BUDGET_API_URL + '/month-stats', {
-          headers: {
-            'Authorization': `Bearer ${token}` 
-          },
-          timeout: 8000,
-        });
-        const data: MonthStatResponse[] = response.data['month_stats'];
-        console.log('data len: ' + response.data['month_stats'].length);
-        setMonthStatData(data);
-        setSelectListData(
-          data.map((row, index) => {
-            console.log(`data: ${data}`);
-            return {key: index, value: row.month_id + '/' + row.year_num};
-          }),
-        );
-      } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-          handleAxiosError(error, usersDispatch);
-        } else {
-          console.error(error);
-        }
-      }
-      setShowSpinner(false);
-    };
-
-    getMonthStat();
-  }, []);
+  const renderMonthStats = () => {
+    if (selected == null) return null;
+    const selectedMonthStat = monthStatData[selected];
+    return (
+      <View>
+        <Text style={styles.monthLabel}>
+          Month: {selectedMonthStat.month_id} Year: {selectedMonthStat.year_num}
+        </Text>
+        <MonthStats selectedMonthStats={selectedMonthStat} />
+      </View>
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerLabel}>Select Month: </Text>
-        {monthStatData ? (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
+        {!isLoading ? (
           <SelectList
             data={selectListData}
             save="key"
             onSelect={() => console.log(selected)}
-            setSelected={(val: React.SetStateAction<number | null>) =>
-              setSelected(val)
-            }
+            setSelected={(val: React.SetStateAction<number | null>) => setSelected(val)}
+
             defaultOption={{key: null, value: null}}
             dropdownTextStyles={styles.inputStyles}
             inputStyles={styles.inputStyles}
@@ -84,19 +41,14 @@ export const FindMonthPage: React.FC = () => {
         )}
       </View>
       <View style={styles.monthContainer}>
-        {selected != null ? (
-          <View>
-            <Text style={styles.monthLabel}>
-              Month: {monthStatData[selected].month_id.toString()} Year:{' '}
-              {monthStatData[selected].year_num.toString()}
-            </Text>
-            <MonthStats selectedMonthStats={monthStatData[selected]} />
-          </View>
-        ) : null}
+        {renderMonthStats()}
       </View>
-      <View style={{flex: 6}}>
-        {showSpinner && <ActivityIndicator size="large" />}
-      </View>
+      {isLoading && (
+        <View>
+          <ActivityIndicator size="large" />
+        </View>
+
+      )}
     </ScrollView>
   );
 };

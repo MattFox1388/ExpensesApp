@@ -1,16 +1,18 @@
 appId: BudgetMobileClient
 ---
-- tapOn:
-    point: "62%,22%"
-- tapOn:
-    point: "94%,6%"
-- tapOn:
-    point: "93%,26%"
+- repeat:
+    while:
+      notVisible: "Username"
+    commands:
+      - tapOn: 
+            point: "94%,6%"
+- tapOn: "Username"
 - inputText: "kazou1388"
-- tapOn:
-    point: "93%,33%"
+- tapOn: "Password"
 - inputText: "g!antMint26"
 - tapOn: "Login"
 - tapOn:
-    point: "50%,68%"
-- tapOn: "Not Now"
+    point: "94%,6%"
+- assertVisible: "You are logged in as kazou1388!"
+- "back"
+- tapOn: "Home Page"

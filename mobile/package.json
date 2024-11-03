@@ -72,7 +72,8 @@
     "@react-native/babel-preset": "^0.75.3",
     "@react-native/eslint-config": "^0.75.3",
     "@shopify/eslint-plugin": "^46.0.0",
-    "@types/jest": "^28.1.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.8.7",
     "@types/object.entries": "^1",
     "@types/react": "^18.3.11",
     "@types/react-native": "^0.70.6",
@@ -86,10 +87,8 @@
     "object.entries": "1.1.5",
     "prettier": "^3.3.3",
     "react-test-renderer": "17.0.2",
+    "ts-jest": "^29.2.5",
     "typescript": "~5.3.3"
-  },
-  "jest": {
-    "preset": "react-native"
   },
   "resolutions": {
     "@types/react": "18.2.0",
