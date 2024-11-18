@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as RootNavigation from '../../navigation/RootNavigation';
@@ -13,90 +13,72 @@ export const CreateUserPage: React.FC = () => {
   const [user, setUser] = useState<User>({ username: '', password: '' });
   const [error, setError] = useState<string>('');
 
-  const validateUsername = (input: string): boolean => {
-    /*
-        Tests that username will have alphanumeric characters or 
-        dot, dash, or underscore. Username must be 3-30 characters long.
-    */
-    const regex = /^[a-zA-Z0-9._-]{3,30}$/;
-    return regex.test(input);
-  };
-
-  const validatePassword = (input: string): boolean => {
-    /*
-        Tests that password will have one uppercase character, 
-        one special character, and 8+ characters total
-    */
-    const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*=])(?=.{8,100})/;
-    return regex.test(input);
-  };
+  const validateUsername = (input: string): boolean => /^[a-zA-Z0-9._-]{3,30}$/.test(input);
+  const validatePassword = (input: string): boolean => /^(?=.*[A-Z])(?=.*[!@#$%^&*=])(?=.{8,100})/.test(input);
 
   const handleCreateUser = async (): Promise<void> => {
-    if (user.username.length === 0 || user.password.length === 0) {
+    if (user.username === '' || user.password === '') {
       setError('Username and password are required');
       return;
     }
 
     if (!validateUsername(user.username)) {
-      setError('Username must be 3-20 characters long and can only contain letters, numbers, dots, underscores, and hyphens');
+      setError('Username must be 3-20 characters and may contain letters, numbers, dots, underscores, or hyphens');
       return;
     }
 
     if (!validatePassword(user.password)) {
-      setError('Password must be at least 8 characters long, contain 1 uppercase letter, and 1 special character (!,@,#,$,%,^,&,*,=)');
+      setError('Password must be at least 8 characters, include 1 uppercase letter, and 1 special character (!,@,#,$,%,^,&,*)');
       return;
     }
 
-    // If all validations pass, you can proceed with user creation
-    // IMPORTANT: Ensure that server-side validation and parameterized queries are used
-    console.log('Creating user:', user);
     const token = await AsyncStorage.getItem('login_token');
     try {
-      const response = await axios({
-        method: 'put',
-        url: process.env.EXPO_PUBLIC_BUDGET_API_URL + '/users',
-        data: {
-          username: user.username,
-          password: user.password
-        },
+      const response = await axios.put(process.env.EXPO_PUBLIC_BUDGET_API_URL + '/users', {
+        username: user.username,
+        password: user.password
+      }, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         }
       });
-
       RootNavigation.navigate('HomePage', {});
-      
     } catch (error: any) {
       console.log(error.message);
       setError('User Could Not Be Created.');
     }
-    
   };
 
   const handleInputChange = (field: keyof User) => (value: string): void => {
     setUser(prevUser => ({ ...prevUser, [field]: value }));
+    if (error) setError(''); // Clear error message on input change
   };
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={user.username}
-        onChangeText={handleInputChange('username')}
-        autoCapitalize="none"
-        maxLength={20}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={user.password}
-        onChangeText={handleInputChange('password')}
-        secureTextEntry
-        maxLength={50}
-        autoCapitalize='none'
-      />
+      <Text style={styles.header}>Create a New Account</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={user.username}
+          onChangeText={handleInputChange('username')}
+          autoCapitalize="none"
+          maxLength={20}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={user.password}
+          onChangeText={handleInputChange('password')}
+          secureTextEntry
+          maxLength={50}
+          autoCapitalize='none'
+        />
+      </View>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
       <TouchableOpacity style={styles.button} onPress={handleCreateUser}>
         <Text style={styles.buttonText}>Create User</Text>
@@ -109,27 +91,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
+    padding: 20,
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  inputContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 3,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
+    height: 45,
+    fontSize: 16,
+    color: '#333',
   },
   button: {
-    backgroundColor: 'blue',
-    padding: 12,
+    backgroundColor: '#2196F3',
+    borderRadius: 10,
+    paddingVertical: 15,
     alignItems: 'center',
-    borderRadius: 4,
+    marginVertical: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 3,
   },
   buttonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
   },
   errorText: {
-    color: 'red',
-    marginBottom: 12,
+    color: '#D9534F',
+    textAlign: 'center',
+    marginVertical: 10,
   },
 });

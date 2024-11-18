@@ -9,13 +9,7 @@ const LoginIcon: React.FC = () => {
   };
   return (
     <View>
-      {/*<Icon*/}
-      {/*  name="sign-in"*/}
-      {/*  size={30}*/}
-      {/*  style={{paddingTop: 10}}*/}
-      {/*  onPress={navigateToLogin}*/}
-      {/*/>*/}
-        <AntDesign name="login" size={24} color="black" onPress={navigateToLogin}/>
+        <AntDesign name="login" size={24} color="white" onPress={navigateToLogin}/>
     </View>
   );
 };

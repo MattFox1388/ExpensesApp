@@ -1,16 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import {
-  convertToUncategorizedItem,
-  UncategorizedItem,
-} from '../../shared/UncategorizedItem';
-import * as _ from 'underscore';
 import Toast from 'react-native-toast-message';
 import {
   DataTable,
@@ -18,244 +14,168 @@ import {
   Modal,
   Portal,
   RadioButton,
+  Tooltip,
 } from 'react-native-paper';
+import {
+  getMonthRecordsUncat,
+  ignoreMonthRecord,
+  setRecordCategories,
+} from '../../services/CategoriesService';
+import { useUsersContext } from '../../contexts/UsersContext';
 import { CategoryType } from '../../shared/CategoryEnum';
-import { getMonthRecordsUncat, ignoreMonthRecord, setRecordCategories } from '../../services/CategoriesService';
-import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleAxiosError } from '../../shared/AxiosErrorUtility';
-import { useUsersContext } from '../../contexts/UsersContext';
+import { convertToUncategorizedItem, UncategorizedItem } from '../../shared/UncategorizedItem';
+import axios, { AxiosError } from 'axios';
 
-const tableColumns = ['date', 'description', 'amount', 'options'];
 interface ErrorState {
   isError: boolean;
   title: string;
   description: string;
 }
 
+const { width } = Dimensions.get('window');
+
 export const UncategorizedItemsPage: React.FC = () => {
-  const [uncategorizedItems, setUncategorizedItems] = React.useState<
-    Array<UncategorizedItem>
-  >([]);
+  const [uncategorizedItems, setUncategorizedItems] = useState<UncategorizedItem[]>([]);
   const [showSpinner, setShowSpinner] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalValue, setModalValue] = React.useState(CategoryType.Need);
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalIndex, setModalIndex] = useState(0);
-  const [error, setError] = useState<ErrorState>({
-    isError: false,
-    title: '',
-    description: ''
-  });
-  const {state: usersState, dispatch: usersDispatch} = useUsersContext();
-  
-  const setUncategorizedItemsFn = async () => {
-      const token = await AsyncStorage.getItem('login_token');
-      // get uncategorized items
-      setShowSpinner(true);
-      try {
-       const response = await getMonthRecordsUncat(token ?? '', usersState.username!!) ;
+  const [modalValue, setModalValue] = useState<Number>(CategoryType.Need);
+  const [modalTitle, setModalTitle] = useState('Set Category');
+  const [modalIndex, setModalIndex] = useState<number | null>(null);
+  const { state: usersState, dispatch: usersDispatch } = useUsersContext();
 
-        const uncategorizedItems: UncategorizedItem[] = response.data[
-          'month_records'
-        ].map((row: any) => {
-          return convertToUncategorizedItem(row);
-        });
-        setUncategorizedItems(uncategorizedItems);
-      } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-          handleAxiosError(error, usersDispatch);
-          } else {
-            console.error(error);
-          } 
-          Toast.show({
-            type: 'error',
-            text1: 'Error Occurred When Receiving uncategorized items',
-            text2: `Details: ${error.message || "None"}`
-          }) 
-      }
-      setShowSpinner(false);
-    };
-
-  useEffect(() => {
-    setUncategorizedItemsFn();
-  }, []);
-
-  const openModal = (index: number) => {
-    setModalIndex(index);
-    setModalTitle('Set Category');
-    setModalValue(CategoryType.Need);
-    setModalVisible(true);
-  };
-  
-  const closeModal = () => {
-    setModalVisible(false);
-    setModalIndex(0);
-    setModalValue(CategoryType.Need);
-  };
-
-  const setUncatItem = async (): Promise<any> => {
-    const token = await AsyncStorage.getItem('login_token');
+  const fetchUncategorizedItems = async () => {
     setShowSpinner(true);
-    const data = [{
-      'cat_id': (modalValue + 1),
-      'month_record_id': uncategorizedItems[modalIndex].month_id,
-    }];
-
+    const token = await AsyncStorage.getItem('login_token');
     try {
-      if ((modalValue + 1) != 6)
-        await setRecordCategories(token ?? '', data, usersState.username!!);
-      else
-        await ignoreMonthRecord(token ?? '', [uncategorizedItems[modalIndex].month_id]);
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        handleAxiosError(error, usersDispatch);
-        } else {
-          console.error(error);
-        }  
-        Toast.show({
-          type: 'error',
-          text1: 'Error Occurred When Receiving uncategorized items',
-          text2: `Details: ${error.message || "None"}`
-        }) 
+      const response = await getMonthRecordsUncat(token ?? '', usersState.username!);
+      setUncategorizedItems(response.data.month_records.map(convertToUncategorizedItem));
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? err.message : "Unexpected error";
+      handleAxiosError(err as AxiosError<unknown, any>, usersDispatch);
+      Toast.show({ type: 'error', text1: 'Error Loading Items', text2: message });
     }
     setShowSpinner(false);
-    await setUncategorizedItemsFn();
+  };
+
+  useEffect(() => {
+    fetchUncategorizedItems();
+  }, []);
+
+  const handleCategorySet = async () => {
+    if (modalIndex === null) return;
+    setShowSpinner(true);
+    const token = await AsyncStorage.getItem('login_token');
+    const selectedItem = uncategorizedItems[modalIndex];
+    const categoryData = [{ cat_id: modalValue.toString(), month_record_id: selectedItem.month_id }];
+
+    try {
+      await (modalValue === CategoryType.Ignore
+        ? ignoreMonthRecord(token ?? '', [selectedItem.month_id])
+        : setRecordCategories(token ?? '', categoryData, usersState.username!)
+      );
+      await fetchUncategorizedItems();
+    } catch (err) {
+      const message = axios.isAxiosError(err) ? err.message : "Unexpected error";
+      handleAxiosError(err as AxiosError<unknown, any>, usersDispatch);
+      Toast.show({ type: 'error', text1: 'Error Setting Category', text2: message });
+    }
+    setShowSpinner(false);
     closeModal();
   };
 
-  const hideModal = () => setModalVisible(false);
+  const radioButtonGroupChange = (newValue: string) => {
+    setModalValue(Number.parseInt(newValue));
+  }
+
+  const openModal = (index: number) => {
+    setModalIndex(index);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => setModalVisible(false);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.labelText}>Uncategorized Items</Text>
-      <View style={{ flex: 1 }}>
-        {showSpinner && <ActivityIndicator size="large" />}
-      </View>
+      <Text style={styles.headerText}>Uncategorized Items</Text>
+      {showSpinner && <ActivityIndicator size="large" style={styles.spinner} />}
       <Portal>
-        <Modal visible={modalVisible} onDismiss={hideModal}>
-          <View style={styles.modalContainer}>
+        <Modal visible={modalVisible} onDismiss={closeModal}>
+          <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{modalTitle}</Text>
             <RadioButton.Group
-              onValueChange={newValue => setModalValue(CategoryType[newValue as keyof typeof CategoryType])}
-              value={CategoryType[modalValue]}>
-              <View>
-                <Text>Need</Text>
-                <RadioButton.Android testID={"need-btn"} value={CategoryType[CategoryType.Need]} />
-              </View>
-              <View>
-                <Text>Want</Text>
-                <RadioButton.Android testID={"want-btn"} value={CategoryType[CategoryType.Want]} />
-              </View>
-              <View>
-                <Text>Saving</Text>
-                <RadioButton.Android testID={"saving-btn"} value={CategoryType[CategoryType.Saving]} />
-              </View>
-              <View>
-                <Text>Income</Text>
-                <RadioButton.Android testID={"income-btn"} value={CategoryType[CategoryType.Income]} />
-              </View>
-              <View>
-                <Text>Other</Text>
-                <RadioButton.Android testID={"other-btn"} value={CategoryType[CategoryType.Other]} />
-              </View>
-              <View>
-                <Text>Ignore</Text>
-                <RadioButton.Android testID={"ignore-btn"} value={CategoryType[CategoryType.Ignore]} />
-              </View>
+              onValueChange={(newValue) => radioButtonGroupChange(newValue)}
+              value={modalValue.toString()}
+            >
+              {Object.keys(CategoryType)
+                .filter(key => isNaN(Number(key)))
+                .map((key) => (
+                  <View key={key} style={styles.radioButtonRow}>
+                    <Text>{key}</Text>
+                    <RadioButton value={CategoryType[key as keyof typeof CategoryType].toString()} />
+                  </View>
+                ))}
             </RadioButton.Group>
-            <Button mode="contained" onPress={() => { setUncatItem(); }}>Submit</Button>
+            <Button mode="contained" onPress={handleCategorySet}>Submit</Button>
           </View>
         </Modal>
       </Portal>
-      <View style={styles.uncatItemsContainer}>
+      <ScrollView style={styles.scrollContainer}>
         {uncategorizedItems.length === 0 ? (
-          <Text style={styles.dataText}>No Uncategorized Items</Text>
+          <Text style={styles.noItemsText}>No Uncategorized Items</Text>
         ) : (
-          <ScrollView>
-            <Text style={styles.dataText}>Uncategorized Items</Text>
-            <DataTable>
-              <DataTable.Header>
-                {tableColumns.map((column, index) => {
-                  return (
-                    <DataTable.Title textStyle={styles.dataText} key={index}>
-                      {column}
-                    </DataTable.Title>
-                  );
-                })}
-              </DataTable.Header>
-              {uncategorizedItems.map((row, index) => {
-                return (
-                  <DataTable.Row key={index} accessible={false}>
-                    <DataTable.Cell textStyle={styles.dataText}>
-                      {row.date}
-                    </DataTable.Cell>
-                    <DataTable.Cell textStyle={styles.dataText}>
-                      {row.month_description}
-                    </DataTable.Cell>
-                    <DataTable.Cell textStyle={styles.dataText}>
-                      {row.amount}
-                    </DataTable.Cell>
-                    <View style={styles.dataText} accessible={false}>
-                      <Button
-                        mode="text"
-                        testID={"modal-btn-" + index}
-                        icon="ballot"
-                        accessible={true}
-                        onPress={() => openModal(index)}>
-                        {' '}
-                      </Button>
-                    </View>
-                  </DataTable.Row>
-                );
-              })}
-            </DataTable>
-          </ScrollView>
+          <DataTable>
+            <DataTable.Header>
+              {['Date', 'Description', 'Amount', 'Options'].map((header, index) => (
+                <DataTable.Title key={index} textStyle={styles.tableHeader}>{header}</DataTable.Title>
+              ))}
+            </DataTable.Header>
+            {uncategorizedItems.map((item, index) => (
+              <DataTable.Row key={index}>
+                <DataTable.Cell> 
+                  <Tooltip title={item.date} enterTouchDelay={0} leaveTouchDelay={500}>
+                    <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
+                      {item.date}
+                    </Text>
+                  </Tooltip>
+                </DataTable.Cell>
+                <DataTable.Cell>
+                  <Tooltip title={item.month_description} enterTouchDelay={0} leaveTouchDelay={500}>
+                    <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
+                      {item.month_description}
+                    </Text>
+                  </Tooltip>
+                </DataTable.Cell>
+                <DataTable.Cell>
+                  <Tooltip title={"$" + item.amount.toString()} enterTouchDelay={0} leaveTouchDelay={500}>
+                    <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
+                      ${item.amount}
+                    </Text>
+                  </Tooltip>
+                </DataTable.Cell>
+                <DataTable.Cell>
+                  <Button mode="text" icon="ballot" onPress={() => openModal(index)}>Set</Button>
+                </DataTable.Cell>
+              </DataTable.Row>
+            ))}
+          </DataTable>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  labelText: {
-    flex: 1,
-    color: 'black',
-    alignSelf: 'flex-start',
-    paddingLeft: 5,
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  dataText: {
-    flex: 1,
-    color: 'black',
-    alignSelf: 'flex-start',
-    paddingLeft: 5,
-    fontSize: 10,
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  uncatItemsContainer: {
-    flex: 15,
-    flexDirection: 'row',
-    marginLeft: 5,
-    marginRight: 5,
-  },
-  head: { height: 40, color: 'black', backgroundColor: '#f1f8ff' },
-  tableStyle: { width: '100%' },
-  tableText: { color: 'black', fontSize: 10, textAlign: 'center' },
-  tableTitle: { marginBottom: 10 },
-  modalContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'gray',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
+  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+  headerText: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
+  spinner: { marginVertical: 20 },
+  scrollContainer: { flex: 1 },
+  noItemsText: { textAlign: 'center', fontSize: 16, marginTop: 20 },
+  tableHeader: { fontWeight: 'bold' },
+  modalContent: { padding: 20, backgroundColor: 'white', borderRadius: 8 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
+  radioButtonRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  cellText: { fontSize: 14, width: width * 0.2 }, // Adjust width as needed
+
 });
