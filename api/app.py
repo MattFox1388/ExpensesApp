@@ -22,8 +22,9 @@ from models.month import Month
 from models.monthRecord import MonthRecord
 from models.monthStat import MonthStat
 from models.user import User
-from services.uncategorized_items_services import UncategorizedItemsService
-from services.user_service import UserService
+from services.uncategorized_items import UncategorizedItemsService
+from services.user import UserService
+from services.year import build_year_stats
 from shared.delete_data_db import delete_data_db
 from shared.exceptions import InvalidIngestRequestDataException
 from shared.sqlite_create import initialize_db
@@ -177,7 +178,7 @@ def create_app(app_config=None):
 
     @app.route('/month-stats/year/<year>/user/<username>', methods=['GET'])
     @check_for_token
-    def get_month_stats_by_year(year, username):
+    def get_year_stats(year, username):
         try:
             year = valid_year(year)
             print('year: {}'.format(year))
@@ -185,10 +186,9 @@ def create_app(app_config=None):
             return "Invalid year", 400
 
         month_stats = MonthStat.query.filter_by(year_num=year, username=username).all()
-        dtos = map(lambda item: MonthStatDto.from_orm(item), month_stats)
-        json = MonthStatDtoList(month_stats=list(dtos)).json()
-        print('response: {}'.format(json))
-        return json
+        response = build_year_stats(year, month_stats).toJSON()
+        print('response: {}'.format(response))
+        return response
 
 
     @app.route('/month-records/year/<year_num>/month/<month_val>/user/<username>', methods=['GET'])

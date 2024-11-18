@@ -45,11 +45,12 @@ class UncategorizedItemsService:
 
     def delete_uncategorized_item(self, month_record_id, cat_id):
         month_record_to_update, cat_name = update_month_record(month_record_id, cat_id)
-        uncat_item_id = month_record_to_update.uncategorizedItems[0].id
+        if len(month_record_to_update.uncategorizedItems) > 0:
+            uncat_item_id = month_record_to_update.uncategorizedItems[0].id
+            uncat_item = UncategorizedItem.query.filter_by(id=uncat_item_id).one_or_none()
+            self.db.session.delete(uncat_item)
         self.update_month_stat_record(month_record_to_update.year_num, month_record_to_update.month_id, cat_name,
                                       month_record_to_update.amount, month_record_to_update.username)
-        uncat_item = UncategorizedItem.query.filter_by(id=uncat_item_id).one_or_none()
-        self.db.session.delete(uncat_item)
 
     def ignore_uncategorized_items(self, month_record_ids):
         ignored_uncat_items = 0

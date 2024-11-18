@@ -22,6 +22,8 @@ services:
       - "5001:5001"
     volumes:
       - .:/Budget_API
+#    stdin_open: true
+#    tty: true
 
   db:
     platform: linux/x86_64
